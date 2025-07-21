@@ -251,9 +251,9 @@ export default function EditingToolbar({
         </select>
         <input
           type="number"
-          value={Math.round((selectedElement?.fontSize || 20) * (window.__canvasScale || 1))}
+          value={Math.round((selectedElement?.fontSize || 20) * ((window as any).__canvasScale || 1))}
           onChange={(e) => {
-            const scale = window.__canvasScale || 1;
+            const scale = (window as any).__canvasScale || 1;
             const newVisualSize = parseInt(e.target.value) || 0;
             const newFontSize = Math.round(newVisualSize / scale);
             onUpdateElement(selectedElement.id, { fontSize: newFontSize });

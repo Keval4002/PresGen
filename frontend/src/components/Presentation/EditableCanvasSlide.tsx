@@ -58,14 +58,18 @@ interface SnapGuideLines {
 }
 
 // --- TemplatePicker Modal Component ---
-function TemplatePicker({ onClose, onSelect }) {
-  const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+interface TemplatePickerProps {
+  onClose: () => void;
+  onSelect: (template: any) => void;
+}
+function TemplatePicker({ onClose, onSelect }: TemplatePickerProps) {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   // Track which template is being hovered and its slideshow index
-  const [hoveredTemplateId, setHoveredTemplateId] = useState(null);
-  const [slideshowIndex, setSlideshowIndex] = useState({});
-  const slideshowIntervalRef = useRef({});
+  const [hoveredTemplateId, setHoveredTemplateId] = useState<string | null>(null);
+  const [slideshowIndex, setSlideshowIndex] = useState<Record<string, number>>({});
+  const slideshowIntervalRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}api/templates/active`)
@@ -87,7 +91,7 @@ function TemplatePicker({ onClose, onSelect }) {
     };
   }, []);
 
-  const handleMouseEnter = (template) => {
+  const handleMouseEnter = (template: any) => {
     setHoveredTemplateId(template._id);
     // Start slideshow for this template
     if (template.content?.slide_images?.length > 1) {
@@ -100,7 +104,7 @@ function TemplatePicker({ onClose, onSelect }) {
     }
   };
 
-  const handleMouseLeave = (template) => {
+  const handleMouseLeave = (template: any) => {
     setHoveredTemplateId(null);
     setSlideshowIndex((prev) => ({ ...prev, [template._id]: 0 }));
     if (slideshowIntervalRef.current[template._id]) {
@@ -181,7 +185,11 @@ function TemplatePicker({ onClose, onSelect }) {
 export { TemplatePicker };
 
 // --- Slideshow Modal for Template Preview ---
-function TemplateSlideshowModal({ template, onClose }) {
+interface TemplateSlideshowModalProps {
+  template: any;
+  onClose: () => void;
+}
+function TemplateSlideshowModal({ template, onClose }: TemplateSlideshowModalProps) {
   const [current, setCurrent] = useState(0);
   const images = template?.content?.slide_images || [];
 
@@ -680,9 +688,7 @@ export default function EditableCanvasSlide({
     }
   };
 
-  const selectedElement = canvasElements.find(
-    (el) => el.id === selectedElementId
-  );
+  const selectedElement = (canvasElements.find((el) => el.id === selectedElementId) ?? null) as CanvasElement | null;
   const enhancedTheme = {
     background_color: theme.background_color || "#ffffff",
     primary_color: theme.primary_color || "#1f2937",
@@ -848,7 +854,7 @@ export default function EditableCanvasSlide({
   const showFloatingButtons = !!selectedElement;
 
   // Helper to get rotated bounding box bottom center (for button placement)
-  function getRotatedBottomCenter(x, y, w, h, rotationDeg) {
+  function getRotatedBottomCenter(x: number, y: number, w: number, h: number, rotationDeg: number) {
     const rad = (rotationDeg * Math.PI) / 180;
     // Bottom center before rotation
     const bx = x + w / 2;
@@ -1178,8 +1184,8 @@ export default function EditableCanvasSlide({
                 onAddText={addText}
                 onAddImage={addImage}
                 onAddShape={addShape}
-                onUndo={onUndo}
-                onRedo={onRedo}
+                onUndo={onUndo || (() => {})}
+                onRedo={onRedo || (() => {})}
                 canUndo={!!canUndo && !!selectedElement}
                 canRedo={!!canRedo && !!selectedElement}
                 orientation="row"

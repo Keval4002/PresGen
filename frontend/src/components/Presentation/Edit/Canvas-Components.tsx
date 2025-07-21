@@ -137,7 +137,22 @@ function getHandlePositions(bounds: { x: number; y: number; width: number; heigh
 }
 
 // --- Resize logic ---
-function getResizedDims(handle, startDims, pointer, minSize = 48) {
+interface Dims {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+interface Pointer {
+  x: number;
+  y: number;
+}
+function getResizedDims(
+  handle: string,
+  startDims: Dims,
+  pointer: Pointer,
+  minSize: number = 48
+) {
   const { x, y, width, height } = startDims;
   const { x: px, y: py } = pointer;
   let newX = x, newY = y, newWidth = width, newHeight = height;

@@ -9,29 +9,29 @@ import { convertSlideToCanvasElements } from '../../../../components/Presentatio
 import { CANVAS_CONFIG } from '../../../../components/Presentation/Edit/CanvaTypesConst';
 
 // Utility: Convert SVG element to PNG data URL
-async function svgElementToPngDataUrl(svgElement, width, height) {
-  return new Promise((resolve, reject) => {
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const svgBlob = new Blob([svgData], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-    const url = URL.createObjectURL(svgBlob);
-    const img = new window.Image();
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(img, 0, 0, width, height);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/png"));
-    };
-    img.onerror = reject;
-    img.src = url;
-  });
-}
+// async function svgElementToPngDataUrl(svgElement, width, height) {
+//   return new Promise((resolve, reject) => {
+//     const svgData = new XMLSerializer().serializeToString(svgElement);
+//     const svgBlob = new Blob([svgData], {
+//       type: "image/svg+xml;charset=utf-8",
+//     });
+//     const url = URL.createObjectURL(svgBlob);
+//     const img = new window.Image();
+//     img.onload = function () {
+//       const canvas = document.createElement("canvas");
+//       canvas.width = width;
+//       canvas.height = height;
+//       const ctx = canvas.getContext("2d");
+//       ctx.fillStyle = "#fff";
+//       ctx.fillRect(0, 0, width, height);
+//       ctx.drawImage(img, 0, 0, width, height);
+//       URL.revokeObjectURL(url);
+//       resolve(canvas.toDataURL("image/png"));
+//     };
+//     img.onerror = reject;
+//     img.src = url;
+//   });
+// }
 
 // Remove all mxgraph imports, svgElementToPngDataUrl, ChartPreviewImage, and any chart-related useState/useEffect
 // Remove any chart-related asset sidebar UI and logic
@@ -199,7 +199,7 @@ function PresentationEditComponent() {
       .catch(() => setInfographs([]));
   }, []);
 
-  function insertImageToSlide(imageUrl) {
+  function insertImageToSlide(imageUrl: string) {
     const newElement = {
       id: uuidv4(),
       type: "image",
@@ -219,10 +219,10 @@ function PresentationEditComponent() {
   }
 
   // Ensure all canvasElements have a unique id before rendering or saving
-  function ensureElementIds(slides) {
-    return slides.map((slide) => ({
+  function ensureElementIds(slides: Slide[]): Slide[] {
+    return slides.map((slide: Slide) => ({
       ...slide,
-      canvasElements: (slide.canvasElements || []).map((el) => ({
+      canvasElements: (slide.canvasElements || []).map((el: CanvasElement) => ({
         ...el,
         id: el.id || uuidv4(),
       })),
@@ -307,7 +307,7 @@ function PresentationEditComponent() {
     // Only allow backend save if user explicitly clicks save and title is valid
     try {
       const slidesWithIds = ensureElementIds(slides);
-      const updatedSlides = slidesWithIds.map((s) => ({
+      const updatedSlides = slidesWithIds.map((s: Slide) => ({
         ...s,
         canvasWidth: s.canvasWidth || 2560,
         canvasHeight: s.canvasHeight || 1440,
@@ -368,8 +368,12 @@ function PresentationEditComponent() {
         // Redirect to home after save
         router.push('/presentation');
       }, 2000);
-    } catch (err) {
-      setError(err.message || "Unknown error occurred while saving.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Unknown error occurred while saving.");
+      } else {
+        setError("Unknown error occurred while saving.");
+      }
       setTimeout(() => setError(null), 8000);
     } finally {
       setIsSaving(false);
@@ -382,9 +386,9 @@ function PresentationEditComponent() {
     };
   }, []);
 
-  function handleApplyTemplate(template, mode = "replace") {
+  function handleApplyTemplate(template: any, mode: string = "replace") {
     if (!template?.content?.slides?.length) return;
-    const templateSlides = template.content.slides.map(s => ({
+    const templateSlides = template.content.slides.map((s: Slide) => ({
       ...s,
       canvasElements: s.canvasElements && s.canvasElements.length > 0
         ? s.canvasElements
@@ -435,7 +439,7 @@ function PresentationEditComponent() {
       // Do NOT save to backend on blur, only update local state
     }
   };
-  const handleTitleKeyDown = (e) => {
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleTitleBlur();
@@ -803,6 +807,12 @@ function MobileDropdownMenu({
   onSave,
   canDelete,
   canSave,
+}: {
+  onAddSlide: () => void;
+  onDeleteSlide: () => void;
+  onSave: () => void;
+  canDelete: boolean;
+  canSave: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

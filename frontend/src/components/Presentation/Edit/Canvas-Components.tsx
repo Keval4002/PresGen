@@ -292,7 +292,7 @@ function SelectionWithHandles({ bounds, onHandleDrag, onHandleDragEnd, isStylize
   const handleStroke = '#fff';
   const handleStrokeWidth = 0;
   const handles = getHandlePositions(bounds);
-  const handleCursor = {
+  const handleCursor: { [key: string]: string } = {
     tl: 'nwse-resize',
     tr: 'nesw-resize',
     br: 'nwse-resize',
@@ -362,15 +362,16 @@ interface CanvasTextElementProps extends CanvasElementProps<TextElement> {
 export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelected, onUpdate, onSelect, onDragMove, onDragEnd, canvasScale, editingTextId, editingTextValue, setEditingTextId, setEditingTextValue, onTextEditStart, onTextEditCommit, onTextEditCancel, textRef }) => {
   const localTextRef = useRef<Konva.Text | null>(null);
   const textNodeRef = textRef || localTextRef;
-  const [resizing, setResizing] = useState(false);
-  const [resizeStart, setResizeStart] = useState(null);
-  const [resizeHandle, setResizeHandle] = useState(null);
+  const [resizing, setResizing] = useState<boolean>(false);
+  const [resizeStart, setResizeStart] = useState<TextElement | null>(null);
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
   const editing = editingTextId === element.id;
 
   // Helper to get absolute position of the text element on the page
   const getTextAbsolutePosition = () => {
     if (!textNodeRef.current) return { left: 0, top: 0 };
     const stage = textNodeRef.current.getStage();
+    if (!stage) return { left: 0, top: 0 };
     const box = textNodeRef.current.getClientRect({ relativeTo: stage });
     const stageBox = stage.container().getBoundingClientRect();
     return {
@@ -380,12 +381,11 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
       height: box.height,
       rotation: element.rotation || 0,
       fontSize: element.fontSize,
-      fontFamily: element.fontFamily,
       color: element.fill,
     };
   };
 
-  const handleDblClick = (e) => {
+  const handleDblClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (isSelected) {
       console.log('Double-click detected for text element', element.id);
       onTextEditStart(element.id, element.text);
@@ -396,7 +396,7 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
     onTextEditCommit(element.id);
   };
 
-  const handleEditKeyDown = (e) => {
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onTextEditCommit(element.id);
@@ -419,25 +419,33 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
   // Always use element directly for selection box
   const selectionBounds = getSelectionBounds(element);
 
-  const handleHandleDrag = (handle, e) => {
+  const handleHandleDrag = (handle: string, e: KonvaEventObject<DragEvent>) => {
     if (!resizeStart) {
       setResizeStart({ ...element });
       setResizeHandle(handle);
       setResizing(true);
       return;
     }
-    let pointer = e.target.getStage().getPointerPosition();
+    if (!e.target) return;
+    const stage = e.target.getStage && e.target.getStage();
+    if (!stage) return;
+    let pointer = stage.getPointerPosition();
+    if (!pointer) return;
     if (canvasScale && canvasScale !== 1) {
       pointer = { x: pointer.x / canvasScale, y: pointer.y / canvasScale };
     }
     const newDims = getResizedDims(handle, resizeStart, pointer);
     onUpdate(element.id, newDims, true); // transient update
   };
-  const handleHandleDragEnd = (handle, e) => {
+  const handleHandleDragEnd = (handle: string, e: KonvaEventObject<DragEvent>) => {
     setResizing(false);
     setResizeStart(null);
     setResizeHandle(null);
-    let pointer = e.target.getStage().getPointerPosition();
+    if (!e.target) return;
+    const stage = e.target.getStage && e.target.getStage();
+    if (!stage) return;
+    let pointer = stage.getPointerPosition();
+    if (!pointer) return;
     if (canvasScale && canvasScale !== 1) {
       pointer = { x: pointer.x / canvasScale, y: pointer.y / canvasScale };
     }
@@ -459,7 +467,6 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
         draggable={draggable !== false && !resizing}
         onClick={() => onSelect(id)}
         onTap={() => onSelect(id)}
-        onDblClick={handleDblClick}
         text={editing ? editingTextValue : element.text}
         onDragMove={(e: KonvaEventObject<DragEvent>) => {
           if (!resizing) {
@@ -472,7 +479,6 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
           }
         }}
         onDragEnd={(e: KonvaEventObject<DragEvent>) => {
-          if (!resizing) {
             const constrained = constrainElementToBounds(
               element,
               e.target.x() - element.width / 2,
@@ -481,7 +487,7 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
             onUpdate(id, { ...constrained, width: element.width, height: element.height } as Partial<TextElement>);
             onDragEnd();
           }
-        }}
+        }
       />
       {isSelected && (
         <SelectionWithHandles
@@ -490,7 +496,6 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
           onHandleDragEnd={handleHandleDragEnd}
           isStylized
           rotation={element.rotation || 0}
-          onDblClick={() => onTextEditStart(element.id, element.text)}
         />
       )}
     </>
@@ -500,9 +505,9 @@ export const CanvasTextElement: FC<CanvasTextElementProps> = ({ element, isSelec
 export const CanvasImageElement: FC<CanvasElementProps<ImageElement>> = ({ element, isSelected, onUpdate, onSelect, onDragMove, onDragEnd, canvasScale }) => {
   const [img, loading, error] = useImage(element.src);
   const selectionBounds = getSelectionBounds(element);
-  const [resizing, setResizing] = useState(false);
-  const [resizeStart, setResizeStart] = useState(null);
-  const [resizeHandle, setResizeHandle] = useState(null);
+  const [resizing, setResizing] = useState<boolean>(false);
+  const [resizeStart, setResizeStart] = useState<ImageElement | null>(null);
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
 
   const { id, type, src, draggable, fallbackAttempted, ...konvaProps } = element;
 
@@ -538,25 +543,6 @@ export const CanvasImageElement: FC<CanvasElementProps<ImageElement>> = ({ eleme
           draggable={draggable !== false}
           onClick={() => onSelect(id)}
           onTap={() => onSelect(id)}
-          onDragMove={(e) => {
-            if (!resizing) {
-              if (!isSelected) onSelect(id);
-              const newPos = {
-                x: e.target.x() - element.width / 2,
-                y: e.target.y() - element.height / 2
-              };
-              onDragMove(element, newPos);
-            }
-          }}
-          onDragEnd={(e) => { if (!resizing) {
-            const constrained = constrainElementToBounds(
-              element,
-              e.target.x() - element.width / 2,
-              e.target.y() - element.height / 2
-            );
-            onUpdate(id, { ...constrained, width: element.width, height: element.height } as Partial<ImageElement>);
-            onDragEnd();
-          }}}
         />
         {isSelected && <Rect {...selectionBounds} stroke={CANVAS_CONFIG.SELECTION_BOX_COLOR} strokeWidth={2} listening={false} cornerRadius={element.cornerRadius} />}
       </>
@@ -565,25 +551,33 @@ export const CanvasImageElement: FC<CanvasElementProps<ImageElement>> = ({ eleme
 
   // For drag/move, render image at element.x, element.y with element.width/element.height
   // Only use object-fit/contain logic for resizing (not for movement)
-  const handleHandleDrag = (handle, e) => {
+  const handleHandleDrag = (handle: string, e: KonvaEventObject<DragEvent>) => {
     if (!resizeStart) {
       setResizeStart({ ...element });
       setResizeHandle(handle);
       setResizing(true);
       return;
     }
-    let pointer = e.target.getStage().getPointerPosition();
+    if (!e.target) return;
+    const stage = e.target.getStage && e.target.getStage();
+    if (!stage) return;
+    let pointer = stage.getPointerPosition();
+    if (!pointer) return;
     if (canvasScale && canvasScale !== 1) {
       pointer = { x: pointer.x / canvasScale, y: pointer.y / canvasScale };
     }
     const newDims = getResizedDims(handle, resizeStart, pointer);
     onUpdate(element.id, newDims, true);
   };
-  const handleHandleDragEnd = (handle, e) => {
+  const handleHandleDragEnd = (handle: string, e: KonvaEventObject<DragEvent>) => {
     setResizing(false);
     setResizeStart(null);
     setResizeHandle(null);
-    let pointer = e.target.getStage().getPointerPosition();
+    if (!e.target) return;
+    const stage = e.target.getStage && e.target.getStage();
+    if (!stage) return;
+    let pointer = stage.getPointerPosition();
+    if (!pointer) return;
     if (canvasScale && canvasScale !== 1) {
       pointer = { x: pointer.x / canvasScale, y: pointer.y / canvasScale };
     }
@@ -603,7 +597,7 @@ export const CanvasImageElement: FC<CanvasElementProps<ImageElement>> = ({ eleme
         draggable={draggable !== false && !resizing}
         onClick={() => onSelect(id)}
         onTap={() => onSelect(id)}
-        onDragMove={(e) => {
+        onDragMove={(e: KonvaEventObject<DragEvent>) => {
           if (!resizing) {
             if (!isSelected) onSelect(id);
             const newPos = {
@@ -613,7 +607,7 @@ export const CanvasImageElement: FC<CanvasElementProps<ImageElement>> = ({ eleme
             onDragMove(element, newPos);
           }
         }}
-        onDragEnd={(e) => { if (!resizing) { 
+        onDragEnd={(e: KonvaEventObject<DragEvent>) => { if (!resizing) { 
           const constrained = constrainElementToBounds(
             element,
             e.target.x() - element.width / 2,
@@ -645,29 +639,37 @@ export const CanvasImageElement: FC<CanvasElementProps<ImageElement>> = ({ eleme
 export const CanvasShapeElement: FC<CanvasElementProps<ShapeElement>> = ({ element, isSelected, onUpdate, onSelect, onDragMove, onDragEnd, canvasScale }) => {
   const selectionBounds = getSelectionBounds(element);
   const { id, type, shapeType, draggable, ...commonProps } = element;
-  const [resizing, setResizing] = useState(false);
-  const [resizeStart, setResizeStart] = useState(null);
-  const [resizeHandle, setResizeHandle] = useState(null);
+  const [resizing, setResizing] = useState<boolean>(false);
+  const [resizeStart, setResizeStart] = useState<ShapeElement | null>(null);
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
 
-  const handleHandleDrag = (handle, e) => {
+  const handleHandleDrag = (handle: string, e: KonvaEventObject<DragEvent>) => {
     if (!resizeStart) {
       setResizeStart({ ...element });
       setResizeHandle(handle);
       setResizing(true);
       return;
     }
-    let pointer = e.target.getStage().getPointerPosition();
+    if (!e.target) return;
+    const stage = e.target.getStage && e.target.getStage();
+    if (!stage) return;
+    let pointer = stage.getPointerPosition();
+    if (!pointer) return;
     if (canvasScale && canvasScale !== 1) {
       pointer = { x: pointer.x / canvasScale, y: pointer.y / canvasScale };
     }
     const newDims = getResizedDims(handle, resizeStart, pointer);
     onUpdate(element.id, newDims, true);
   };
-  const handleHandleDragEnd = (handle, e) => {
+  const handleHandleDragEnd = (handle: string, e: KonvaEventObject<DragEvent>) => {
     setResizing(false);
     setResizeStart(null);
     setResizeHandle(null);
-    let pointer = e.target.getStage().getPointerPosition();
+    if (!e.target) return;
+    const stage = e.target.getStage && e.target.getStage();
+    if (!stage) return;
+    let pointer = stage.getPointerPosition();
+    if (!pointer) return;
     if (canvasScale && canvasScale !== 1) {
       pointer = { x: pointer.x / canvasScale, y: pointer.y / canvasScale };
     }
@@ -702,7 +704,7 @@ export const CanvasShapeElement: FC<CanvasElementProps<ShapeElement>> = ({ eleme
   };
 
   const renderShape = () => {
-    switch (element.shapeType) {
+    switch (shapeType) {
       case 'rectangle': return <Rect {...commonProps} {...eventHandlers} />;
       case 'circle': return <Circle {...commonProps} {...eventHandlers} />;
       case 'ellipse': return <Ellipse {...commonProps} radiusX={element.width / 2} radiusY={element.height / 2} x={element.x + (element.width / 2)} y={element.y + (element.height / 2)} {...eventHandlers} />;

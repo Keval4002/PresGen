@@ -54,7 +54,7 @@ function Sidebar() {
   const [isRecentlyViewedOpen, setIsRecentlyViewedOpen] = useState(true);
 
   const navigationItems: readonly NavItem[] = [
-    { icon: LayoutGrid, label: "Dashboard", path: '/dashboard' },
+    // { icon: LayoutGrid, label: "Dashboard", path: '/dashboard' },
     { icon: Home, label: "Home", path: '/presentation' },
     // { icon: LayoutGrid, label: "Templates", path: '/presentation/templates' },
     { icon: Trash2, label: "Trash", path: '/presentation/trash' }

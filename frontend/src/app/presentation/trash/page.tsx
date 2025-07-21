@@ -5,7 +5,7 @@ import ProjectCard from '../../../components/Presentation/PptProjectCard';
 import { useSearchParams } from 'next/navigation';
 
 interface IProject {
-  _id: string;
+  projectId: string;
   id: string;
   title: string;
   updated_label: string;

@@ -279,7 +279,15 @@ function getResizedDims(
 }
 
 // --- Stylized selection box and handles ---
-function SelectionWithHandles({ bounds, onHandleDrag, onHandleDragEnd, isStylized, rotation = 0, ...props }) {
+interface SelectionWithHandlesProps {
+  bounds: Dims;
+  onHandleDrag?: (handle: string, e: any) => void;
+  onHandleDragEnd?: (handle: string, e: any) => void;
+  isStylized?: boolean;
+  rotation?: number;
+  [key: string]: any;
+}
+function SelectionWithHandles({ bounds, onHandleDrag, onHandleDragEnd, isStylized, rotation = 0, ...props }: SelectionWithHandlesProps) {
   const handleRadius = 18;
   const handleStroke = '#fff';
   const handleStrokeWidth = 0;

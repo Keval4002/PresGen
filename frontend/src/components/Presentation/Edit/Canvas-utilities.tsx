@@ -23,7 +23,11 @@ interface Bounds {
 }
 
 // --- Exported Functions ---
-const constrainElementToBounds = (element: Partial<CanvasElement>, newX: number, newY: number): { x: number; y: number } => {
+function constrainElementToBounds(
+  element: Partial<CanvasElement>,
+  newX: number,
+  newY: number
+): { x: number; y: number } {
   const { WIDTH, HEIGHT } = CANVAS_CONFIG;
   const { width = 200, height = 50 } = element;
 
@@ -31,9 +35,12 @@ const constrainElementToBounds = (element: Partial<CanvasElement>, newX: number,
     x: Math.max(0, Math.min(newX, WIDTH - width)),
     y: Math.max(0, Math.min(newY, HEIGHT - height)),
   };
-};
+}
 
-const generateSnapGuides = (draggedElement: CanvasElement, allElements: CanvasElement[]): SnapGuideLines => {
+function generateSnapGuides(
+  draggedElement: CanvasElement,
+  allElements: CanvasElement[]
+): SnapGuideLines {
   const guides: SnapGuideLines = { vertical: [], horizontal: [] };
   const { SNAP_THRESHOLD, WIDTH, HEIGHT } = CANVAS_CONFIG;
   const draggedRight = draggedElement.x + draggedElement.width;
@@ -71,9 +78,9 @@ const generateSnapGuides = (draggedElement: CanvasElement, allElements: CanvasEl
     vertical: [...new Set(guides.vertical)],
     horizontal: [...new Set(guides.horizontal)],
   };
-};
+}
 
-const getSelectionBounds = (element: Partial<CanvasElement>): Bounds => {
+function getSelectionBounds(element: Partial<CanvasElement>): Bounds {
   // No padding for exact fit
   return {
     x: element.x || 0,
@@ -81,7 +88,7 @@ const getSelectionBounds = (element: Partial<CanvasElement>): Bounds => {
     width: element.width || 200,
     height: element.height || 50,
   };
-};
+}
 
 export {
   constrainElementToBounds,

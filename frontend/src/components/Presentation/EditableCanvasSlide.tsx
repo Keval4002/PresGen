@@ -269,8 +269,8 @@ export default function EditableCanvasSlide({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showRgbPicker, setShowRgbPicker] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [slideshowTemplate, setSlideshowTemplate] = useState(null);
-  const [pendingTemplate, setPendingTemplate] = useState(null);
+  const [slideshowTemplate, setSlideshowTemplate] = useState<any | null>(null);
+  const [pendingTemplate, setPendingTemplate] = useState<any | null>(null);
   const [showTemplateActionModal, setShowTemplateActionModal] = useState(false);
 
   // --- Floating Drag/Rotate Button Logic ---
@@ -1178,9 +1178,9 @@ export default function EditableCanvasSlide({
                 selectedElement={selectedElement}
                 onUpdateElement={handleElementUpdate}
                 onDeleteElement={deleteSelectedElement}
-                onDuplicateElement={() => duplicateElement(selectedElement)}
-                onBringToFront={() => bringToFront(selectedElement)}
-                onSendToBack={() => sendToBack(selectedElement)}
+                onDuplicateElement={() => { if (selectedElement) duplicateElement(selectedElement); }}
+                onBringToFront={() => { if (selectedElement) bringToFront(selectedElement); }}
+                onSendToBack={() => { if (selectedElement) sendToBack(selectedElement); }}
                 onAddText={addText}
                 onAddImage={addImage}
                 onAddShape={addShape}

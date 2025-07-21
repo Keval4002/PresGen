@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProjectCard from '../../components/Presentation/PptProjectCard';
 
@@ -16,7 +16,7 @@ interface IProject {
 }
 
 // --- Component ---
-export default function HomePage() {
+function HomePage() {
   const [projects, setProjects] = useState<IProject[] | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [showTrashModal, setShowTrashModal] = useState(false);
@@ -146,5 +146,13 @@ export default function HomePage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function PresentationPageWithSuspense() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+      <HomePage />
+    </Suspense>
   );
 }

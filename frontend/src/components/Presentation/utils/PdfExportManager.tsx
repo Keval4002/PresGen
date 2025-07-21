@@ -214,7 +214,7 @@ export class PdfExportManager {
 
           let textY = coords.y;
           if (element.verticalAlign === 'middle') {
-            const textDimensions = doc.getTextDimensions(element.text || '', { maxWidth: coords.w });
+            const textDimensions = doc.getTextDimensions(element.text || '');
             textY = coords.y + coords.h / 2 - textDimensions.h / 2;
           }
 

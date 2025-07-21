@@ -3,63 +3,69 @@ import type { Theme } from "../client-only/types";
 
 export const PPTX_DIMENSIONS = { WIDTH: 10, HEIGHT: 5.625 };
 
+interface WebCoordinate {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export class CoordinateManager {
-    webToPptx(webCoords) {
+    webToPptx(webCoords: WebCoordinate) {
         if (!this.isValidWebCoordinate(webCoords)) return null;
         const { x, y, w, h } = webCoords;
         return { 
             x: x * PPTX_DIMENSIONS.WIDTH, 
             y: y * PPTX_DIMENSIONS.HEIGHT, 
-      w: Math.min(
-        w * PPTX_DIMENSIONS.WIDTH,
-        PPTX_DIMENSIONS.WIDTH - x * PPTX_DIMENSIONS.WIDTH
-      ),
-      h: Math.min(
-        h * PPTX_DIMENSIONS.HEIGHT,
-        PPTX_DIMENSIONS.HEIGHT - y * PPTX_DIMENSIONS.HEIGHT
-      ),
+            w: Math.min(
+                w * PPTX_DIMENSIONS.WIDTH,
+                PPTX_DIMENSIONS.WIDTH - x * PPTX_DIMENSIONS.WIDTH
+            ),
+            h: Math.min(
+                h * PPTX_DIMENSIONS.HEIGHT,
+                PPTX_DIMENSIONS.HEIGHT - y * PPTX_DIMENSIONS.HEIGHT
+            ),
         };
     }
 
-    isValidWebCoordinate(coords) {
-    if (!coords || typeof coords !== "object") return false;
-        const { x, y, w, h } = coords;
-    return (
-      [x, y, w, h].every((val) => typeof val === "number" && isFinite(val)) &&
-      w >= 0 &&
-      h >= 0 &&
-      x >= 0 &&
-      x <= 1 &&
-      y >= 0 &&
-      y <= 1
-    );
+    isValidWebCoordinate(coords: WebCoordinate | any): boolean {
+      if (!coords || typeof coords !== "object") return false;
+      const { x, y, w, h } = coords;
+      return (
+        [x, y, w, h].every((val) => typeof val === "number" && isFinite(val)) &&
+        w >= 0 &&
+        h >= 0 &&
+        x >= 0 &&
+        x <= 1 &&
+        y >= 0 &&
+        y <= 1
+      );
     }
 
-    validateAndNormalizeLayout(layout) {
-    if (!layout || typeof layout !== "object") return null;
-        const validatedLayout = {};
-        for (const key in layout) {
-      if (
-        Object.prototype.hasOwnProperty.call(layout, key) &&
-        layout[key] &&
-        this.isValidWebCoordinate(layout[key])
-      ) {
-                validatedLayout[key] = layout[key];
-            }
+    validateAndNormalizeLayout(layout: Record<string, WebCoordinate | any>): Record<string, WebCoordinate> | null {
+      if (!layout || typeof layout !== "object") return null;
+      const validatedLayout: { [key: string]: WebCoordinate } = {};
+      for (const key in layout) {
+        if (
+          Object.prototype.hasOwnProperty.call(layout, key) &&
+          layout[key] &&
+          this.isValidWebCoordinate(layout[key])
+        ) {
+          validatedLayout[key] = layout[key];
         }
-        return Object.keys(validatedLayout).length > 0 ? validatedLayout : null;
-    }
-
-  validateSlideMeasurements(measurements) {
-    if (!measurements) return false;
-    if (!measurements.title) return false;
-
-    for (const key in measurements) {
-      if (!this.isValidWebCoordinate(measurements[key])) {
-        return false;
       }
+      return Object.keys(validatedLayout).length > 0 ? validatedLayout : null;
     }
-    return true;
+
+    validateSlideMeasurements(measurements: Record<string, WebCoordinate | any>): boolean {
+      if (!measurements) return false;
+      if (!measurements.title) return false;
+      for (const key in measurements) {
+        if (!this.isValidWebCoordinate(measurements[key])) {
+          return false;
+        }
+      }
+      return true;
     }
 }
 

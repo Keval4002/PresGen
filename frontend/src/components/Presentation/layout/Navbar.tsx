@@ -20,9 +20,9 @@ function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [searchValue, setSearchValue] = useState('');
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<{ title?: string }[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [filteredProjects, setFilteredProjects] = useState([]);
+  const [filteredProjects, setFilteredProjects] = useState<{ title?: string }[]>([]);
   const dropdownRef = useRef(null);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,8 +49,8 @@ function Navbar() {
 
   useEffect(() => {
     // Hide dropdown on outside click
-    const handleClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && (dropdownRef.current as HTMLElement).contains && !(dropdownRef.current as HTMLElement).contains(e.target as Node)) {
         setShowDropdown(false);
       }
     };

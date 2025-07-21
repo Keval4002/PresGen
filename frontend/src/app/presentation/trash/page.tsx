@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import ProjectCard from '../../../components/Presentation/PptProjectCard';
 import { useSearchParams } from 'next/navigation';
 
@@ -13,7 +13,7 @@ interface IProject {
   status: 'active' | 'trashed' | 'deleted';
 }
 
-export default function TrashPage() {
+function TrashPage() {
   const [sampleProjects, setSampleProjects] = useState<IProject[] | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const searchParams = useSearchParams();
@@ -95,5 +95,13 @@ export default function TrashPage() {
         ))}
       </div>
     </>
+  );
+}
+
+export default function TrashPageWithSuspense() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+      <TrashPage />
+    </Suspense>
   );
 }

@@ -116,23 +116,27 @@ function DynamicLayoutRenderer({ slide, theme, layout, slideIndex, onLayoutMeasu
   );
 
   const renderTimelineItems = (): ReactNode[] => {
-      const isTimeline = layoutName === 'zigzag-timeline' || layoutName === 'pyramid';
-      if (!isTimeline) return [];
-      
-      return parsedContent.items.map((item, i) => (
-          <React.Fragment key={`timeline-item-${i}`}>
-              {positions[`item${i}C`] && (
-                  <div ref={(el) => createRef(`item${i}C`, el)} style={{ ...toCss(positions[`item${i}C`]!), display: 'flex', alignItems: 'center', justifyContent: 'center', background: unifiedTheme.primary, color: unifiedTheme.background, borderRadius: '50%', zIndex: 2, fontSize: `${FIXED_FONT_SIZES.CONTENT_TIMELINE}px`, fontWeight: 'bold' }}>{i + 1}</div>
-              )}
-              {positions[`item${i}T`] && (
-                  <div ref={(el) => createRef(`item${i}T`, el)} style={{ ...toCss(positions[`item${i}T`]!), display: 'flex', alignItems: 'center', zIndex: 1, padding: '0.5rem' }}>
-                      <AdaptiveContentContainer onMeasure={onScaleReport!} slideIndex={slideIndex} uniqueKey={`timeline-${i}`}>
-                          <SlideContent formattedItems={[item]} theme={theme} />
-                      </AdaptiveContentContainer>
-                  </div>
-              )}
-          </React.Fragment>
-      ));
+    const isTimeline = layoutName === 'zigzag-timeline' || layoutName === 'pyramid';
+    if (!isTimeline) return [];
+    return parsedContent.items.map((item, i) => (
+      <React.Fragment key={`timeline-item-${i}`}>
+        {positions[`item${i}C`] && (
+          <div ref={(el) => createRef(`item${i}C`, el)} style={{ ...toCss(positions[`item${i}C`]!), display: 'flex', alignItems: 'center', justifyContent: 'center', background: unifiedTheme.primary, color: unifiedTheme.background, borderRadius: '50%', zIndex: 2, fontSize: `${FIXED_FONT_SIZES.CONTENT_TIMELINE}px`, fontWeight: 'bold' }}>{i + 1}</div>
+        )}
+        {positions[`item${i}T`] && (
+          <div ref={(el) => createRef(`item${i}T`, el)} style={{ ...toCss(positions[`item${i}T`]!), display: 'flex', alignItems: 'center', zIndex: 1, padding: '0.5rem' }}>
+            <AdaptiveContentContainer onMeasure={onScaleReport!} slideIndex={slideIndex} uniqueKey={`timeline-${i}`}>
+              <SlideContent formattedItems={[item]} theme={{
+                body_font: theme.body_font || 'Inter',
+                text_color: theme.text_color || '#374151',
+                primary_color: theme.primary_color || '#1f2937',
+                ...theme
+              }} />
+            </AdaptiveContentContainer>
+          </div>
+        )}
+      </React.Fragment>
+    ));
   };
 
   return (

@@ -48,30 +48,59 @@ const SavedPresentationRenderer = forwardRef<Konva.Stage, SavedPresentationRende
   }, []);
 
   const renderCanvasElement = (element: CanvasElement) => {
-    const viewModeElement = {
-      ...element,
-      draggable: false, // Ensure elements are not draggable in view mode
-    };
-    
-    // Props passed to each canvas element component.
-    const commonProps = {
-      element: viewModeElement,
-      isSelected: false,
-      onUpdate: () => {}, // No-op in view mode
-      onSelect: () => {}, // No-op in view mode
-      onDragMove: () => {}, // No-op in view mode
-      onDragEnd: () => {}, // No-op in view mode
-    };
-
-    switch (element.type) {
-      case 'text':
-        return <CanvasTextElement key={element.id} {...commonProps} />;
-      case 'image':
-        return <CanvasImageElement key={element.id} {...commonProps} />;
-      case 'shape':
-        return <CanvasShapeElement key={element.id} {...commonProps} />;
-      default:
-        return null;
+    // Type guards for each element type
+    if (element.type === 'text') {
+      const textElement = { ...element, draggable: false } as import("../Edit/Canvas-Components").TextElement;
+      return (
+        <CanvasTextElement
+          key={element.id}
+          element={textElement}
+          isSelected={false}
+          onUpdate={() => {}}
+          onSelect={() => {}}
+          onDragMove={() => {}}
+          onDragEnd={() => {}}
+          canvasScale={1}
+          editingTextId={null}
+          editingTextValue={''}
+          setEditingTextId={() => {}}
+          setEditingTextValue={() => {}}
+          onTextEditStart={() => {}}
+          onTextEditCommit={() => {}}
+          onTextEditCancel={() => {}}
+          textRef={undefined}
+        />
+      );
+    } else if (element.type === 'image') {
+      const imageElement = { ...element, draggable: false } as import("../Edit/Canvas-Components").ImageElement;
+      return (
+        <CanvasImageElement
+          key={element.id}
+          element={imageElement}
+          isSelected={false}
+          onUpdate={() => {}}
+          onSelect={() => {}}
+          onDragMove={() => {}}
+          onDragEnd={() => {}}
+          canvasScale={1}
+        />
+      );
+    } else if (element.type === 'shape') {
+      const shapeElement = { ...element, draggable: false } as import("../Edit/Canvas-Components").ShapeElement;
+      return (
+        <CanvasShapeElement
+          key={element.id}
+          element={shapeElement}
+          isSelected={false}
+          onUpdate={() => {}}
+          onSelect={() => {}}
+          onDragMove={() => {}}
+          onDragEnd={() => {}}
+          canvasScale={1}
+        />
+      );
+    } else {
+      return null;
     }
   };
 

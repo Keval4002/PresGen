@@ -925,7 +925,7 @@ const PresentationViewerPage = () => {
                     ...theme
                   }} ref={(el: any) => (stageRefs.current[currentSlideIndex] = el)} />
                 ) : (
-                  <SlideCard slide={data.slides[currentSlideIndex]} theme={{
+                  <SlideCard slide={{ type: 'standard-text', content: data.slides[currentSlideIndex].content ?? '', ...data.slides[currentSlideIndex] }} theme={{
                     background_color: theme.background_color || '#fff',
                     ...theme
                   }} slideIndex={currentSlideIndex} onScaleReport={isCompleted(data.status) ? handleScaleReport : undefined} onLayoutMeasure={isCompleted(data.status) ? handleLayoutMeasure : undefined} />
@@ -948,7 +948,7 @@ const PresentationViewerPage = () => {
                 ...theme
               }} />
             ) : (
-              <SlideCard slide={data.slides[currentSlideIndex]} theme={{
+              <SlideCard slide={{ type: 'standard-text', content: data.slides[currentSlideIndex].content ?? '', ...data.slides[currentSlideIndex] }} theme={{
                 background_color: theme.background_color || '#fff',
                 ...theme
               }} slideIndex={currentSlideIndex} />

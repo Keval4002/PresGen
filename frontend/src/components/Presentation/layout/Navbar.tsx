@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Upload, Plus, Mic } from 'lucide-react';
+import { Search, Upload, Plus, Mic, Menu } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 
 // Add a helper for authenticated fetch
@@ -26,6 +26,7 @@ function Navbar() {
   const dropdownRef = useRef(null);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Fetch all saved projects on mount
@@ -133,14 +134,22 @@ function Navbar() {
   }
 
   return (
-    <header className="w-full bg-white px-4 py-2">
+    <header className="w-full bg-white px-4 py-2 shadow-sm">
       <div className="flex items-center w-full gap-3">
         {/* Banner at start of navbar, stretched */}
-        <span className="select-none pointer-events-none flex-shrink-0 min-w-[140px] md:min-w-[200px] px-6 h-10 flex items-center rounded-full bg-gradient-to-r from-blue-100 via-white to-cyan-100 text-lg font-bold text-gray-800 shadow-sm">
+        <span className="select-none pointer-events-none flex-shrink-0 min-w-[120px] md:min-w-[200px] px-4 md:px-6 h-10 flex items-center rounded-full bg-gradient-to-r from-blue-100 via-white to-cyan-100 text-lg font-bold text-gray-800 shadow-sm">
           {bannerLabel}
         </span>
-        {/* Centered Searchbar */}
-        <div className="flex-1 flex justify-center">
+        {/* Hamburger for mobile */}
+        <button
+          className="md:hidden ml-auto p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          aria-label="Open menu"
+        >
+          <Menu className="w-7 h-7 text-gray-700" />
+        </button>
+        {/* Desktop search and actions */}
+        <div className="hidden md:flex flex-1 justify-center">
           <div className="flex items-center bg-white rounded-full border border-gray-200 w-full max-w-2xl h-12 px-4 focus-within:ring-2 focus-within:ring-blue-400">
             <input
               type="text"
@@ -163,43 +172,108 @@ function Navbar() {
             </button>
           </div>
         </div>
-        {/* Create/Import Button on the right */}
-        {pathname && pathname.includes('/presentation/templates') ? (
-          <>
-            <input
-              type="file"
-              accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              onChange={handleFileChange}
-              title="Import PPT Template"
-              placeholder="Select a PPT or PPTX file"
-            />
+        {/* Desktop Create/Import Button */}
+        <div className="hidden md:flex items-center">
+          {pathname && pathname.includes('/presentation/templates') ? (
+            <>
+              <input
+                type="file"
+                accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+                title="Import PPT Template"
+                placeholder="Select a PPT or PPTX file"
+              />
+              <button
+                onClick={handleImport}
+                className="flex items-center gap-2 bg-blue-600 text-white rounded-full px-6 h-12 font-semibold text-base shadow hover:bg-blue-700 transition-colors ml-2 disabled:opacity-50"
+                title="Import Template"
+                aria-label="Import Template"
+                style={{ whiteSpace: 'nowrap' }}
+                disabled={importing}
+              >
+                <Upload className="w-5 h-5" />
+                {importing ? 'Importing...' : 'Import'}
+              </button>
+            </>
+          ) : (
             <button
-              onClick={handleImport}
-              className="flex items-center gap-2 bg-blue-600 text-white rounded-full px-6 h-12 font-semibold text-base shadow hover:bg-blue-700 transition-colors ml-2 disabled:opacity-50"
-              title="Import Template"
-              aria-label="Import Template"
+              onClick={handleNewProject}
+              className="flex items-center gap-2 bg-blue-600 text-white rounded-full px-6 h-12 font-semibold text-base shadow hover:bg-blue-700 transition-colors ml-2"
+              title="Create New Project"
+              aria-label="Create New Project"
               style={{ whiteSpace: 'nowrap' }}
-              disabled={importing}
             >
-              <Upload className="w-5 h-5" />
-              {importing ? 'Importing...' : 'Import'}
+              <Plus className="w-5 h-5" />
+              Create
             </button>
-          </>
-        ) : (
-          <button
-            onClick={handleNewProject}
-            className="flex items-center gap-2 bg-blue-600 text-white rounded-full px-6 h-12 font-semibold text-base shadow hover:bg-blue-700 transition-colors ml-2"
-            title="Create New Project"
-            aria-label="Create New Project"
-            style={{ whiteSpace: 'nowrap' }}
-          >
-            <Plus className="w-5 h-5" />
-            Create
-          </button>
-        )}
+          )}
+        </div>
       </div>
+      {/* Mobile menu popover */}
+      {mobileMenuOpen && (
+        <div className="md:hidden mt-2 bg-white rounded-xl shadow-lg border border-gray-100 p-4 z-50 absolute left-0 right-0 mx-2 animate-fade-in">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center bg-white rounded-full border border-gray-200 w-full h-12 px-4 focus-within:ring-2 focus-within:ring-blue-400">
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchValue}
+                onChange={handleInputChange}
+                onFocus={() => setShowDropdown(filteredProjects.length > 0)}
+                onKeyDown={handleSearch}
+                className="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400 text-base"
+                autoComplete="off"
+                style={{ minWidth: 0 }}
+              />
+              <button
+                type="button"
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+                tabIndex={-1}
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+            {pathname && pathname.includes('/presentation/templates') ? (
+              <>
+                <input
+                  type="file"
+                  accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                  title="Import PPT Template"
+                  placeholder="Select a PPT or PPTX file"
+                />
+                <button
+                  onClick={handleImport}
+                  className="flex items-center gap-2 bg-blue-600 text-white rounded-full px-6 h-12 font-semibold text-base shadow hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  title="Import Template"
+                  aria-label="Import Template"
+                  style={{ whiteSpace: 'nowrap' }}
+                  disabled={importing}
+                >
+                  <Upload className="w-5 h-5" />
+                  {importing ? 'Importing...' : 'Import'}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleNewProject}
+                className="flex items-center gap-2 bg-blue-600 text-white rounded-full px-6 h-12 font-semibold text-base shadow hover:bg-blue-700 transition-colors"
+                title="Create New Project"
+                aria-label="Create New Project"
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                <Plus className="w-5 h-5" />
+                Create
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

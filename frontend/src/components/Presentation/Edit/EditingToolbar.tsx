@@ -256,7 +256,9 @@ export default function EditingToolbar({
             const scale = (window as any).__canvasScale || 1;
             const newVisualSize = parseInt(e.target.value) || 0;
             const newFontSize = Math.round(newVisualSize / scale);
-            onUpdateElement(selectedElement.id, { fontSize: newFontSize });
+            if (selectedElement) {
+              onUpdateElement(selectedElement.id, { fontSize: newFontSize });
+            }
           }}
           className="px-2 py-1 border border-gray-300 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-300 transition"
           title="Font Size"
